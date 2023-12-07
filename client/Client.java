@@ -63,7 +63,8 @@ class Client {
                     }
                 }
             }else if(isSocketConnected(endpoint) == true && commandType.compareTo("/join") == 0){
-
+                // If connected client attempts to connect to a server 
+                System.out.println("Error: You are already connected to a server: " + host + ":" + port + ". Please disconnect [/leave] from your current server if you want to connect to another.");
             }
 
         }
