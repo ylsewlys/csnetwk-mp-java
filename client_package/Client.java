@@ -93,6 +93,15 @@ public class Client {
         return this.isUserRegistered;
     }
 
+    // Setters
+    public void setUserConnectStatus(Boolean status){
+        this.isUserConnected = status;
+    }
+
+
+    public void setUserRegistrationStatus(Boolean status){
+        this.isUserRegistered = status;
+    }
 
 
     // Client Functions
@@ -135,8 +144,17 @@ public class Client {
             }else if(commandType.compareTo("/leave") == 0){
                 try{
                     this.writer.writeUTF(command);
-                    System.out.println(this.reader.readUTF());
-                    System.out.println(this.reader.readUTF());
+                    System.out.println(this.reader.readUTF()); // for User wants to execute UTF
+
+                    String status = this.reader.readUTF();
+
+                    if(status.compareTo("disconnect") == 0){
+                        System.out.println("Client connection successfully closed.");
+                        disconnect();
+                    }else if(status.compareTo("Parameter mismatch") == 0){
+                        System.out.println("Error: Command parameters do not match or is not allowed.");
+                    }
+
                 }catch(IOException e){
                     e.printStackTrace();
                 }
@@ -181,11 +199,23 @@ public class Client {
 
             System.out.println("Connected!");
 
-        }catch(ConnectException e) {
+        }catch(IOException e) {
             // If connection fails due to server not running or incorrect IP and Port combination
-            System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
-        }catch(IOException e){
-            e.printStackTrace();
+            System.out.println("Error: Connectionn to the Server has failed! Please check IP Address and Port Number.");
+        }
+    }
+
+    public void disconnect(){
+        if(this.socket != null){
+            try {
+                this.isUserConnected = false;
+                this.isUserRegistered = false;
+                socket.close();
+                socket = null;
+            } catch (IOException e) {
+                System.out.println("Error: You aren't connected to any server");
+            }
+
         }
     }
 

@@ -30,6 +30,7 @@ public class Connection extends Thread {
                 try {
                     String data = dis.readUTF(); // this reads command from client
                     String[] command = data.split(" ");
+                    
                     this.dos.writeUTF("Server: User wants to execute " + data);
                     boolean isUserConnected = processComand(command);
                     if(!isUserConnected){
@@ -56,11 +57,13 @@ public class Connection extends Thread {
         if(command[0].compareTo("/leave") == 0){
             // If invalid parameters
             if(command.length != 1){
-                this.dos.writeUTF("Error: Command parameters do not match or is not allowed.");
+                this.dos.writeUTF("Parameter mismatch");
             }else if(this.clientSocket != null && this.clientSocket.isConnected() == true){
-                this.dos.writeUTF("Client connection successfully closed.");
+                this.dos.writeUTF("disconnect");
                 this.clientSocket.close(); 
                 return false; 
+            }else{
+                this.dos.writeUTF("User not connected.");
             }
         }
         return true;
