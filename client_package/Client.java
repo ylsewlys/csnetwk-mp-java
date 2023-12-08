@@ -16,6 +16,7 @@ public class Client {
 
     private Boolean isUserConnected;
     private Boolean isUserRegistered;
+    private String username = new String();
 
 
 
@@ -23,6 +24,7 @@ public class Client {
     public Client(){
         this.isUserConnected = false;
         this.isUserRegistered = false;
+        this.username = null;
     }
 
 
@@ -93,6 +95,10 @@ public class Client {
         return this.isUserRegistered;
     }
 
+    public String getUsername(){
+        return this.username;
+    }
+
     // Setters
     public void setUserConnectStatus(Boolean status){
         this.isUserConnected = status;
@@ -101,6 +107,10 @@ public class Client {
 
     public void setUserRegistrationStatus(Boolean status){
         this.isUserRegistered = status;
+    }
+
+    public void setUsername(String username){
+        this.username = username;
     }
 
 
@@ -136,6 +146,7 @@ public class Client {
             }else if(commandType.compareTo("/leave") == 0){
                 try{
                     this.writer.writeUTF(command);
+                    this.writer.writeUTF(getUsername());
                     System.out.println(this.reader.readUTF()); // for User wants to execute UTF
 
                     String status = this.reader.readUTF();
@@ -153,17 +164,32 @@ public class Client {
             }else if(commandType.compareTo("/?") == 0){
                 try{
                     this.writer.writeUTF(command);
+                    this.writer.flush();
                     System.out.println(this.reader.readUTF());
                 }catch(IOException e){
                     e.printStackTrace();
                 }
             }else if(commandType.compareTo("/register") == 0){
                 try{
-                    this.writer.writeUTF(command);
-                    System.out.println(this.reader.readUTF());
+                    //checks if the 
+                    if(commandParts[1] == ""){
+                    System.out.println(commandParts[1]);
+                    System.out.println("Error: Invalid number of arguments.");
+                    }else{
+                        this.writer.writeUTF(command);
+                        this.writer.flush();
+                        System.out.println(this.reader.readUTF());
+                        String response = this.reader.readUTF();
+                        if(response.startsWith("Welcome ")){
+                            this.isUserRegistered = true;
+                            this.username = commandParts[1];
+                        }
+                        System.out.println(response);
+                    }
+                
                 }catch(IOException e){
-                    e.printStackTrace();
-                }
+                        e.printStackTrace();
+                    }
                 
             }else if(commandType.compareTo("/store") == 0){
                 try{
@@ -202,6 +228,7 @@ public class Client {
             try {
                 this.isUserConnected = false;
                 this.isUserRegistered = false;
+                this.username = null;
                 socket.close();
                 socket = null;
             } catch (IOException e) {
