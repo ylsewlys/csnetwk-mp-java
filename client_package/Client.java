@@ -157,6 +157,19 @@ public class Client {
                 }catch(IOException e){
                     e.printStackTrace();
                 }                
+            }else if(commandType.compareTo("/dir") == 0){
+                try{
+                    if(this.isUserRegistered){
+                        this.writer.writeUTF(command);
+                        System.out.println(this.reader.readUTF());
+                        System.out.println(this.reader.readUTF());
+                    }else{
+                        System.out.println("Error: You must be registered to use this command.");
+                    }
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+             
             }else{
                 System.out.println("Error: Menu Command not found. Please enter a valid command from the list of commands [/?].");
             }
