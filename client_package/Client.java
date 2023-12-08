@@ -96,7 +96,11 @@ public class Client {
             }else if(commandType.compareTo("/leave") == 0){
                 try{
                     this.writer.writeUTF(command);
-                    this.writer.writeUTF(getUsername());
+
+                    // if user is registered
+                    if(this.isUserRegistered){
+                        this.writer.writeUTF(getUsername());
+                    }
                     System.out.println(this.reader.readUTF()); // for User wants to execute UTF
 
                     String status = this.reader.readUTF();

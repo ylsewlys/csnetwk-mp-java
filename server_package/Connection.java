@@ -10,6 +10,7 @@ public class Connection extends Thread {
     private final DataInputStream dis;
     private final DataOutputStream dos;
     private static String[] clientUsernames = new String[100];
+    private boolean isUserRegistered = false;
 
     public Connection(Socket s) throws IOException  {
         this.clientSocket = s;
@@ -59,23 +60,32 @@ public class Connection extends Thread {
        
         String username = null;
         if(command[0].compareTo("/leave") == 0){
-            username = dis.readUTF();
+
+            // Check if user is registered
+            if(this.isUserRegistered){
+                username = dis.readUTF();
+            }
             // If invalid parameters
             if(command.length != 1){
                 this.dos.writeUTF("Parameter mismatch");
             }else if(this.clientSocket != null && this.clientSocket.isConnected() == true){
+
                 //finds the username and deletes it in the array
-                for(int i = 0; i < clientUsernames.length; i++){
-                    if(clientUsernames[i] != null && clientUsernames[i].equalsIgnoreCase(username)){
-                        //shifts the remaining element to fill the gap
-                        for (int j = i; j < clientUsernames.length - 1; j++) {
-                            clientUsernames[j] = clientUsernames[j + 1];
+                if(this.isUserRegistered){
+                    for(int i = 0; i < clientUsernames.length; i++){
+                        if(clientUsernames[i] != null && clientUsernames[i].equalsIgnoreCase(username)){
+                            //shifts the remaining element to fill the gap
+                            for (int j = i; j < clientUsernames.length - 1; j++) {
+                                clientUsernames[j] = clientUsernames[j + 1];
+                            }
+                            //sets the last element to null
+                            clientUsernames[clientUsernames.length - 1] = null;
+                            break; //break the loop
                         }
-                        //sets the last element to null
-                        clientUsernames[clientUsernames.length - 1] = null;
-                        break; //break the loop
                     }
                 }
+
+                this.isUserRegistered = false;
                 this.dos.writeUTF("disconnect");
                 this.clientSocket.close(); 
                 return false; 
@@ -106,6 +116,7 @@ public class Connection extends Thread {
                     if(clientUsernames[i] == null){
                         clientUsernames[i] = username;
                         System.out.println("Username Saved: " + username);
+                        this.isUserRegistered = true;
                         break;
                     }
                 }
