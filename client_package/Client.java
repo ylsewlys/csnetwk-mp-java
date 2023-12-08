@@ -125,18 +125,10 @@ public class Client {
                 System.out.println("Error: You are already connected to a server: " + this.host + ":" + this.port + ". Please disconnect [/leave] from your current server if you want to connect to another.");
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == false){
                 if(commandParts.length == 3){
-                    try {
-                        this.host = commandParts[1];
-                        this.port = Integer.parseInt(commandParts[2]);
-
-                        joinServer(host, port);
-
-                        System.out.println("FROM SERVER: " + this.reader.readUTF());      
-                    } catch (IOException e) {
-                        // TODO: handle exception
-                        e.printStackTrace();
-                    }
-
+                    this.host = commandParts[1];
+                    this.port = Integer.parseInt(commandParts[2]);
+                
+                    joinServer(host, port);
 
                 }else{
                     System.out.println("Error: Invalid command parameters. Please make sure you've entered the correct parameters: /join <server_ip_add> <port>");
@@ -197,11 +189,11 @@ public class Client {
 
             this.isUserConnected = true;
 
-            System.out.println("Connected!");
+            System.out.println("FROM SERVER: " + this.reader.readUTF());   
 
         }catch(IOException e) {
             // If connection fails due to server not running or incorrect IP and Port combination
-            System.out.println("Error: Connectionn to the Server has failed! Please check IP Address and Port Number.");
+            System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
         }
     }
 
