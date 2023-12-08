@@ -19,6 +19,7 @@ public class Connection extends Thread {
     @Override
     public void run() {
         try {
+            System.out.println("[CONNECTION]: IN");
             String welcomeMsg = "Successfully connected!";
             dos.writeUTF(welcomeMsg);
             
@@ -28,7 +29,14 @@ public class Connection extends Thread {
             while (true) {
                 try {
                     String data = dis.readUTF(); // this reads command from client
-                    System.out.println("User wants to execute " + data);
+                    String[] command = data.split(" ");
+                    this.dos.writeUTF("Server: User wants to execute " + data);
+                    boolean isUserConnected = processComand(command);
+                    if(!isUserConnected){
+                        break;
+                    }
+
+                    
                 } catch (IOException e) {
                     System.out.println("Client disconnected unexpectedly");
                     break;                
@@ -42,5 +50,23 @@ public class Connection extends Thread {
             System.out.println("Server: Client " + clientSocket.getRemoteSocketAddress() + " has disconnected");
         }
     }
+
+    private boolean processComand(String[] command) throws IOException{
+
+        if(command[0].compareTo("/leave") == 0){
+            // If invalid parameters
+            if(command.length != 1){
+                this.dos.writeUTF("Error: Command parameters do not match or is not allowed.");
+            }else if(this.clientSocket != null && this.clientSocket.isConnected() == true){
+                this.dos.writeUTF("Client connection successfully closed.");
+                this.clientSocket.close(); 
+                return false; 
+            }
+        }
+        return true;
+    }
+
+
+
 
 }

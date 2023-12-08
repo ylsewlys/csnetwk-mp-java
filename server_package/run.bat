@@ -1,3 +1,1 @@
-javac *.java
-
-java Server
+javac -d ../ *.java

@@ -104,7 +104,6 @@ public class Client {
             String[] commandParts = command.split(" ");
             String commandType = commandParts[0];
 
-            System.out.println("COMMAND: " + command);
             // If command is invalid
             if(isCommandValid(commandType) == false){
                 System.out.println("Error: Command not found.");
@@ -117,18 +116,52 @@ public class Client {
                 System.out.println("Error: You are already connected to a server: " + this.host + ":" + this.port + ". Please disconnect [/leave] from your current server if you want to connect to another.");
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == false){
                 if(commandParts.length == 3){
-                    this.host = commandParts[1];
-                    this.port = Integer.parseInt(commandParts[2]);
+                    try {
+                        this.host = commandParts[1];
+                        this.port = Integer.parseInt(commandParts[2]);
 
-                    joinServer(host, port);
+                        joinServer(host, port);
+
+                        System.out.println("FROM SERVER: " + this.reader.readUTF());      
+                    } catch (IOException e) {
+                        // TODO: handle exception
+                        e.printStackTrace();
+                    }
+
 
                 }else{
                     System.out.println("Error: Invalid command parameters. Please make sure you've entered the correct parameters: /join <server_ip_add> <port>");
                 }
             }else if(commandType.compareTo("/leave") == 0){
-                System.out.println("Leave");
+                try{
+                    this.writer.writeUTF(command);
+                    System.out.println(this.reader.readUTF());
+                    System.out.println(this.reader.readUTF());
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
             }else if(commandType.compareTo("/?") == 0){
-                System.out.println("/?");
+                try{
+                    this.writer.writeUTF(command);
+                    System.out.println(this.reader.readUTF());
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+            }else if(commandType.compareTo("/register") == 0){
+                try{
+                    this.writer.writeUTF(command);
+                    System.out.println(this.reader.readUTF());
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+                
+            }else if(commandType.compareTo("/store") == 0){
+                try{
+                    this.writer.writeUTF(command);
+                    System.out.println(this.reader.readUTF());
+                }catch(IOException e){
+                    e.printStackTrace();
+                }                
             }else{
                 System.out.println("Error: Menu Command not found. Please enter a valid command from the list of commands [/?].");
             }
@@ -145,6 +178,8 @@ public class Client {
             this.writer = new DataOutputStream(socket.getOutputStream());
 
             this.isUserConnected = true;
+
+            System.out.println("Connected!");
 
         }catch(ConnectException e) {
             // If connection fails due to server not running or incorrect IP and Port combination
@@ -173,47 +208,6 @@ public class Client {
     }
 
 
-    // public int countParts(String input){
-
-    //     int count = 1;
-
-    //     if(input.length() > 0){
-    //         for(int i = 0; i < input.length(); i++){
-    //             if(input.charAt(i) == ' '){
-    //                 count++;
-    //             }
-    //         }
-    //     }else{
-    //         return 0;
-    //     }
-
-    //     return count;
-    // }
-
-    // public String[] readInputParts(String input){
-    //     int inputPartsCount = countParts(input);
-    //     String[] inputParts = new String[inputPartsCount];
-    //     int inputPartsIndex = 0;
-
-    //     String inputPart = "";
-
-    //     for(int i = 0; i < input.length(); i++){
-    //         if(input.charAt(i) == ' ' || i == input.length() - 1){
-
-    //             if(i == input.length() - 1){
-    //                 inputPart = inputPart + input.charAt(i);
-    //             }
-
-    //             inputParts[inputPartsIndex] = inputPart; // add input part to array
-    //             inputPartsIndex++; // increment index
-    //             inputPart = ""; // reset string input part to read next part
-    //         }else{
-    //             inputPart = inputPart + input.charAt(i);
-    //         }
-    //     }
-
-    //     return inputParts;
-    // }
 
     public void printStrArrayElements(String[] strArray){
 
