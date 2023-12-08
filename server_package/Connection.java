@@ -30,7 +30,7 @@ public class Connection extends Thread {
                 try {
                     String data = dis.readUTF(); // this reads command from client
                     String[] command = data.split(" ");
-                    
+
                     this.dos.writeUTF("Server: User wants to execute " + data);
                     boolean isUserConnected = processComand(command);
                     if(!isUserConnected){
@@ -54,6 +54,7 @@ public class Connection extends Thread {
 
     private boolean processComand(String[] command) throws IOException{
 
+        System.out.println("PROCESSING COMMAND: " + command[0] + "|");
         if(command[0].compareTo("/leave") == 0){
             // If invalid parameters
             if(command.length != 1){
@@ -65,6 +66,33 @@ public class Connection extends Thread {
             }else{
                 this.dos.writeUTF("User not connected.");
             }
+        }
+        else if(command[0].compareTo("/?") == 0){
+
+            
+            // If invalid parameters
+            if(command.length != 1){
+                this.dos.writeUTF("Parameter mismatch");
+            }else{
+                System.out.println("HERE");
+                String helpMsg = """
+                Connect to the server application: /join <server_ip_add> <port>
+                Disconnect from the server application: /leave
+                Register a unique handle or alias: /register <handle>
+                Send file to server: /store <filename>
+                Request directory file list from a server: /dir
+                Fetch a file from a server: /get <filename>
+                Request command help:""";
+
+                dos.writeUTF(helpMsg);
+
+            }            
+
+
+
+
+                    
+           
         }
         return true;
     }

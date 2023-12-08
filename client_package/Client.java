@@ -120,10 +120,14 @@ public class Client {
             else if(commandType.compareTo("/join") != 0 && this.isUserConnected == false){
                 // If client is not connected and attempts to use other commands besides /join
                 System.out.println("Client: You must join a server before you can use the " + commandType + " command.");
+
+        
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == true){
                 // If client is already connected to a server and attempts to join one.
                 System.out.println("Error: You are already connected to a server: " + this.host + ":" + this.port + ". Please disconnect [/leave] from your current server if you want to connect to another.");
+
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == false){
+                // If client is not connected and attempts to join
                 if(commandParts.length == 3){
                     this.host = commandParts[1];
                     this.port = Integer.parseInt(commandParts[2]);
@@ -153,7 +157,17 @@ public class Client {
             }else if(commandType.compareTo("/?") == 0){
                 try{
                     this.writer.writeUTF(command);
-                    System.out.println(this.reader.readUTF());
+                    System.out.println(this.reader.readUTF()); // for User wants to execute UTF
+
+                    String response = this.reader.readUTF();
+
+                    if(response.compareTo("Parameter mismatch") == 0){
+                        System.out.println("Error: Command parameters do not match or is not allowed.");
+                    }else{
+                        System.out.println(response);
+                    }
+
+
                 }catch(IOException e){
                     e.printStackTrace();
                 }
