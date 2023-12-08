@@ -1,14 +1,15 @@
 package server_package;
 
-
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 
 public class Connection extends Thread {
 
     private final Socket clientSocket;
     private final DataInputStream dis;
     private final DataOutputStream dos;
+    private static String[] clientUsernames = new String[100];
 
     public Connection(Socket s) throws IOException  {
         this.clientSocket = s;
@@ -30,8 +31,9 @@ public class Connection extends Thread {
                 try {
                     String data = dis.readUTF(); // this reads command from client
                     String[] command = data.split(" ");
-
-                    this.dos.writeUTF("Server: User wants to execute " + data);
+                    
+                    this.dos.writeUTF("Server: User wants to execute " + command[0]);
+                    
                     boolean isUserConnected = processComand(command);
                     if(!isUserConnected){
                         break;
@@ -53,19 +55,63 @@ public class Connection extends Thread {
     }
 
     private boolean processComand(String[] command) throws IOException{
-
-        System.out.println("PROCESSING COMMAND: " + command[0] + "|");
+       
+        String username = null;
         if(command[0].compareTo("/leave") == 0){
+            username = dis.readUTF();
             // If invalid parameters
             if(command.length != 1){
                 this.dos.writeUTF("Parameter mismatch");
             }else if(this.clientSocket != null && this.clientSocket.isConnected() == true){
+                //finds the username and deletes it in the array
+                for(int i = 0; i < clientUsernames.length; i++){
+                    if(clientUsernames[i] != null && clientUsernames[i].equalsIgnoreCase(username)){
+                        //shifts the remaining element to fill the gap
+                        for (int j = i; j < clientUsernames.length - 1; j++) {
+                            clientUsernames[j] = clientUsernames[j + 1];
+                        }
+                        //sets the last element to null
+                        clientUsernames[clientUsernames.length - 1] = null;
+                        break; //break the loop
+                    }
+                }
                 this.dos.writeUTF("disconnect");
                 this.clientSocket.close(); 
                 return false; 
             }else{
                 this.dos.writeUTF("User not connected.");
             }
+            this.dos.flush();
+        }else if(command[0].compareTo("/register") == 0){
+            //variable for checking if username exist
+            boolean username_exists = false;
+            //gets the username from the command
+            username = command[1];
+            username = username.trim();
+            //checks if the array already contains the username
+            for(int i = 0; i < clientUsernames.length; i++){
+                if(clientUsernames[i] != null && clientUsernames[i].equalsIgnoreCase(username)){
+                    username_exists = true;
+                    break;
+                }
+            }
+            //if it already contains the username, error message is sent
+            if(username_exists){
+                this.dos.writeUTF("Error: Registration failed. Handle or alias already exists.");
+            }
+            //else user is registered
+            else{
+                for(int i = 0; i < clientUsernames.length; i++){
+                    if(clientUsernames[i] == null){
+                        clientUsernames[i] = username;
+                        System.out.println("Username Saved: " + username);
+                        break;
+                    }
+                }
+                this.dos.writeUTF("Welcome "+ username + "!");
+            }
+            this.dos.flush();
+            
         }
         else if(command[0].compareTo("/?") == 0){
 
@@ -96,8 +142,5 @@ public class Connection extends Thread {
         }
         return true;
     }
-
-
-
 
 }
