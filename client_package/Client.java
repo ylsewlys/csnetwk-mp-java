@@ -172,9 +172,8 @@ public class Client {
             }else if(commandType.compareTo("/register") == 0){
                 try{
                     //checks if the 
-                    if(commandParts[1] == ""){
-                    System.out.println(commandParts[1]);
-                    System.out.println("Error: Invalid number of arguments.");
+                    if(commandParts.length != 2){
+                    System.out.println("Error: Invalid command parameters. Please make sure you've entered the correct parameters: /register <username>");
                     }else{
                         this.writer.writeUTF(command);
                         this.writer.flush();
