@@ -104,8 +104,13 @@ public class Client {
             String[] commandParts = command.split(" ");
             String commandType = commandParts[0];
 
-            // If client is not connected and attempts to use other commands besides /join
-            if(commandType.compareTo("/join") != 0 && this.isUserConnected == false){
+            System.out.println("COMMAND: " + command);
+            // If command is invalid
+            if(isCommandValid(commandType) == false){
+                System.out.println("Error: Command not found.");
+            }
+            else if(commandType.compareTo("/join") != 0 && this.isUserConnected == false){
+                // If client is not connected and attempts to use other commands besides /join
                 System.out.println("Client: You must join a server before you can use the " + commandType + " command.");
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == true){
                 // If client is already connected to a server and attempts to join one.

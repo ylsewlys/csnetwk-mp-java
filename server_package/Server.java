@@ -3,8 +3,7 @@ import java.net.*;
 import java.util.*; // For Scanner
 
 
-
-class Server {
+public class Server {
 
     public static void main(String[] args) {
         int port; // server port number
