@@ -29,12 +29,13 @@ public class Connection extends Thread {
             // send the string back to the client
             while (true) {
                 try {
+                    String serverDirectory = "ServerDirectory";
                     String data = dis.readUTF(); // this reads command from client
                     String[] command = data.split(" ");
                     
                     this.dos.writeUTF("Server: User wants to execute " + command[0]);
                     
-                    boolean isUserConnected = processComand(command);
+                    boolean isUserConnected = processComand(command, serverDirectory);
                     if(!isUserConnected){
                         break;
                     }
@@ -54,7 +55,7 @@ public class Connection extends Thread {
         }
     }
 
-    private boolean processComand(String[] command) throws IOException{
+    private boolean processComand(String[] command, String serverDirectory) throws IOException{
        
         String username = null;
         if(command[0].compareTo("/leave") == 0){
@@ -112,6 +113,21 @@ public class Connection extends Thread {
             }
             this.dos.flush();
             
+        }else if(command[0].compareTo("/dir") == 0){
+
+            File directory = new File(serverDirectory);
+            System.out.println("Absolute Path to ServerDirectory: " + directory.getAbsolutePath());
+            File[] files = directory.listFiles();
+            StringBuilder fileList = new StringBuilder();
+
+            if(files != null){
+                for (File file : files){
+                    fileList.append(file.getName()).append("\n");
+                }
+            }
+
+            String finalDirectory = "Server Directory \n" + fileList.toString() + "\n";
+            this.dos.writeUTF(finalDirectory);
         }
         return true;
     }
