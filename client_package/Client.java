@@ -75,6 +75,12 @@ public class Client {
             // If command is invalid
             if(isCommandValid(commandType) == false){
                 System.out.println("Error: Command not found.");
+            }else if(commandType.compareTo("/?") == 0 && this.isUserConnected == false){
+                if(commandParts.length == 1){
+                    printCommands();
+                }else{
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                }
             }
             else if(commandType.compareTo("/join") != 0 && this.isUserConnected == false){
                 // If client is not connected and attempts to use other commands besides /join
@@ -409,6 +415,8 @@ public class Client {
         System.out.println("Send file to server: /store <filename>");
         System.out.println("Request directory file list from a server: /dir");
         System.out.println("Fetch a file from a server: /get <filename>");
+        System.out.println("Broadcast a message to all registered clients: /broadcast <message>");
+        System.out.println("Message a registered client directly: /message <user> <message>");
         System.out.println("Request command help: /?");
 
     }
