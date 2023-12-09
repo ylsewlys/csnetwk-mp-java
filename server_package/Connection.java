@@ -39,7 +39,7 @@ public class Connection extends Thread {
 
         if(clientFiles != null){
             for (File file : clientFiles){
-
+                System.out.println(file.getName());
                 clientFileList.add(file.getName());
             }
         }
@@ -215,7 +215,7 @@ public class Connection extends Thread {
                 byte[] buffer = new byte[4 * 1024];
                 int bytesReceived = 0;
 
-                while(fileSize > 0 && (bytesReceived = this.dis.read(buffer)) != -1){
+                while(fileSize > 0 && (bytesReceived = this.dis.read(buffer, 0, (int) Math.min(buffer.length, fileSize))) != -1){
                     fos.write(buffer, 0, bytesReceived);
                     fileSize -= bytesReceived;
                 }
@@ -235,8 +235,41 @@ public class Connection extends Thread {
                 fos.close();
             }
             
+        }else if(command[0].compareTo("/get") == 0){
+
+            if(!(serverFileList.contains(command[1]))){
+                this.dos.writeUTF("file not found");
+            }else{
+                this.dos.writeUTF("file found");
+                File file = new File(serverDirectory +"/" + command[1]);
+
+                // Send file size
+                this.dos.writeLong(file.length());
+
+                byte[] buffer = new byte[1024 * 4];
+                FileInputStream fis = new FileInputStream(serverDirectory +"/" + command[1]);
+                int bytesRead = 0;
+                
+                while((bytesRead = fis.read(buffer)) != -1){
+                    this.dos.write(buffer, 0, bytesRead);
+                    this.dos.flush();
+                }
+
+                if(clientFileList.contains(command[1]) == false){
+                    this.dos.writeUTF("File received from Server: " + command[1]);
+                    clientFileList.add(command[1]); // add to client files list
+                }else{
+                    this.dos.writeUTF("Overwritten File received from Server: " + command[1]);
+                }
+                
+                System.out.println(this.alias + " successfully received the following file: " + command[1]); 
+
+                fis.close();
+
         }
-        return true;
+
     }
+    return true;
+}
 
 }
