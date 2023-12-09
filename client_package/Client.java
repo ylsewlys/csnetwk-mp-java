@@ -92,7 +92,12 @@ public class Client {
         
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == true){
                 // If client is already connected to a server and attempts to join one.
-                System.out.println("Error: Disconnection failed. Please connect to the server first.");
+                if(commandParts.length != 3){
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                }else{
+                    System.out.println("Error: You're already connected to a server.");
+                }
+                
 
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == false){
                 // If client is not connected and attempts to join
