@@ -3,6 +3,10 @@ package server_package;
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
+import java.util.ArrayList;
+
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;  
 
 public class Connection extends Thread {
 
@@ -10,12 +14,36 @@ public class Connection extends Thread {
     private final DataInputStream dis;
     private final DataOutputStream dos;
     private static String[] clientUsernames = new String[100];
+    private static ArrayList<String> serverFileList = new ArrayList<String>();
+    private static ArrayList<String> clientFileList = new ArrayList<String>();
     private boolean isUserRegistered = false;
+    private static final String clientFileDirectory = "clients_files";
+    private String alias = "";
 
     public Connection(Socket s) throws IOException  {
         this.clientSocket = s;
         this.dis = new DataInputStream(this.clientSocket.getInputStream());
         this.dos = new DataOutputStream(this.clientSocket.getOutputStream());
+
+        File directory = new File("ServerDirectory");
+        File[] files = directory.listFiles();
+
+        if(files != null){
+            for (File file : files){
+                serverFileList.add(file.getName());
+            }
+        }
+
+        File clientDirectory = new File(clientFileDirectory);
+        File[] clientFiles = clientDirectory.listFiles();
+
+        if(clientFiles != null){
+            for (File file : clientFiles){
+
+                clientFileList.add(file.getName());
+            }
+        }
+
     }
 
     @Override
@@ -34,7 +62,14 @@ public class Connection extends Thread {
                     String data = dis.readUTF(); // this reads command from client
                     String[] command = data.split(" ");
                     
-                    this.dos.writeUTF("Server: User wants to execute " + command[0]);
+                    if(this.alias.length() == 0){
+                        this.dos.writeUTF("Server: User wants to execute " + command[0]);
+                        System.out.println("Server: User wants to execute " + command[0]);
+                    }else{
+                        this.dos.writeUTF("Server: " + this.alias + " executes " + command[0]);
+                        System.out.println("Server: " + this.alias + " executes " + command[0]);
+                    }
+                    
                     
                     boolean isUserConnected = processComand(command, serverDirectory);
                     if(!isUserConnected){
@@ -83,6 +118,8 @@ public class Connection extends Thread {
                             break; //break the loop
                         }
                     }
+
+                    this.alias = "";
                 }
 
                 this.isUserRegistered = false;
@@ -117,6 +154,7 @@ public class Connection extends Thread {
                         clientUsernames[i] = username;
                         System.out.println("Username Saved: " + username);
                         this.isUserRegistered = true;
+                        this.alias = username;
                         break;
                     }
                 }
@@ -159,13 +197,44 @@ public class Connection extends Thread {
 
                 dos.writeUTF(helpMsg);
 
-            }            
-
-
-
-
-                    
+            }                   
            
+        }else if(command[0].compareTo("/store") == 0){
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            LocalDateTime now = LocalDateTime.now();
+
+            if(!(clientFileList.contains(command[1]))){
+                this.dos.writeUTF("file not found");
+            }else{
+                this.dos.writeUTF("file found"); // send response to client
+
+                long fileSize = this.dis.readLong();
+
+                FileOutputStream fos = new FileOutputStream(serverDirectory + "/" + command[1]);
+
+                byte[] buffer = new byte[4 * 1024];
+                int bytesReceived = 0;
+
+                while(fileSize > 0 && (bytesReceived = this.dis.read(buffer)) != -1){
+                    fos.write(buffer, 0, bytesReceived);
+                    fileSize -= bytesReceived;
+                }
+
+
+                // If stored file is new
+                if(serverFileList.contains(command[1]) == false){
+                    serverFileList.add(command[1]);
+                    this.dos.writeUTF(this.alias + "<" + dtf.format(now) + "> Uploaded " + command[1]);
+                    System.out.println(this.alias + "<" + dtf.format(now) + "> Uploaded " + command[1]);
+                }else{
+                    // Indicate overwrite
+                    this.dos.writeUTF(this.alias + "<" + dtf.format(now) + "> Overwritten " + command[1]);
+                    System.out.println(this.alias + "<" + dtf.format(now) + "> Overwritten " + command[1]);
+                }
+
+                fos.close();
+            }
+            
         }
         return true;
     }
