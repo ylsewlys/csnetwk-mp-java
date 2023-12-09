@@ -73,7 +73,10 @@ public class Client {
             String commandType = commandParts[0];
 
             // If command is invalid
-            if(isCommandValid(commandType) == false){
+            if(commandType.compareTo("/quit") == 0){
+                System.out.println("Error: Incorrect parameters. Use /leave instead");
+            }
+            else if(isCommandValid(commandType) == false){
                 System.out.println("Error: Command not found.");
             }else if(commandType.compareTo("/?") == 0 && this.isUserConnected == false){
                 if(commandParts.length == 1){
