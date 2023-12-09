@@ -17,14 +17,19 @@ public class MsgClient {
         this.msgWriter = new DataOutputStream(this.msgClientSocket.getOutputStream());
     }
 
-    public void sendMessage(String username, String message){
+    public void sendMessage(String username, String message, Boolean isBroadcast){
 
         try {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
             LocalDateTime now = LocalDateTime.now();
+            String formattedMessage = "";
 
-
-            String formattedMessage = String.format("<%s> From %s: %s", dtf.format(now), username, message);
+            if(isBroadcast){
+                formattedMessage = String.format("[BROADCAST] <%s> From %s: %s", dtf.format(now), username, message);
+            }else{
+                formattedMessage = String.format("<%s> From %s: %s", dtf.format(now), username, message);
+            }
+            
             this.msgWriter.writeUTF(formattedMessage);
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,5 +46,7 @@ public class MsgClient {
             e.printStackTrace();
         }
     }
+
+ 
 
 }

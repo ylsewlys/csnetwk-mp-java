@@ -52,6 +52,7 @@ public class Connection extends Thread {
 
     }
 
+
     @Override
     public void run() {
         try {
@@ -69,8 +70,8 @@ public class Connection extends Thread {
                     String[] command = data.split(" ");
                     
                     if(this.alias.length() == 0){
-                        this.dos.writeUTF("Server: User wants to execute " + command[0]);
-                        System.out.println("Server: User wants to execute " + command[0]);
+                        this.dos.writeUTF("Server: Unregistered user executes " + command[0]);
+                        System.out.println("Server: Unregistered user executes " + command[0]);
                     }else{
                         this.dos.writeUTF("Server: " + this.alias + " executes " + command[0]);
                         System.out.println("Server: " + this.alias + " executes " + command[0]);
@@ -201,6 +202,8 @@ public class Connection extends Thread {
                 Send file to server: /store <filename>
                 Request directory file list from a server: /dir
                 Fetch a file from a server: /get <filename>
+                Broadcast a message to all registered clients: /broadcast <message>
+                Message a registered client directly: /message <user> <message>
                 Request command help:""";
 
                 dos.writeUTF(helpMsg);
@@ -279,12 +282,11 @@ public class Connection extends Thread {
     }else if(command[0].compareTo("/broadcast") == 0){
         String broadcastMsg = this.dis.readUTF();
 
-
         try {
             msgClients.forEach((alias, msgClient) -> {
                 try {
                     if (!alias.equals(this.alias))
-                        msgClient.sendMessage(this.alias, broadcastMsg);
+                        msgClient.sendMessage(this.alias, broadcastMsg, true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -298,8 +300,34 @@ public class Connection extends Thread {
         }
 
 
+    }else if(command[0].compareTo("/message") == 0){
+        String receivedUsername = this.dis.readUTF();
+
+        System.out.println("RECEIVED USERNAME: " + receivedUsername + "|");
+        System.out.println("Status: " + msgClients.containsKey(receivedUsername));
+        // send responses
+        if(msgClients.containsKey(receivedUsername)){
+            if(receivedUsername.compareTo(this.alias) == 0){
+                this.dos.writeUTF("can't message own self");
+            }else{
+                this.dos.writeUTF("user found");
+                String directMsg = this.dis.readUTF();
+
+                msgClients.get(receivedUsername).sendMessage(this.alias, directMsg, false);
+
+                System.out.println(this.alias + " has successfully sent a message to " + receivedUsername);
+
+
+            }
+        }else{
+            this.dos.writeUTF("user not found");
+        }
     }
+
+
     return true;
 }
+
+
 
 }

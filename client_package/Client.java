@@ -297,6 +297,43 @@ public class Client {
                 }
 
 
+            }else if(commandType.compareTo("/message") == 0){
+                if(commandParts.length > 2){
+                    if(isUserRegistered){
+                        try {
+                            this.writer.writeUTF(command); 
+                            System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
+
+                            this.writer.writeUTF(commandParts[1]); // Send username to server for checking
+                            
+                            StringBuilder directMsg = new StringBuilder();
+                            for(int i = 2; i < commandParts.length; i++){
+                                directMsg.append(commandParts[i] + " ");
+                            }
+
+                            String response = this.reader.readUTF();
+
+                            if(response.compareTo("can't message own self") == 0){
+                                System.out.println("Error: You can't directly message your own self.");
+                            }else if(response.compareTo("user not found") == 0){
+                                System.out.println("Error: User not found");
+                            }else if(response.compareTo("user found") == 0){
+                                this.writer.writeUTF(directMsg.toString());
+                                System.out.println("Successfully sent message to " + commandParts[1]);
+                            }
+
+                            
+                            
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+                        System.out.println("Error: You must be registered to use this command.");
+                    }
+
+                }else{
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                }
             }else{
                 System.out.println("Error: Menu Command not found. Please enter a valid command from the list of commands [/?].");
             }
@@ -360,7 +397,7 @@ public class Client {
     }
 
     public Boolean isCommandValid(String command){
-        ArrayList<String> validCommandsList = new ArrayList<>(List.of("/join", "/leave", "/register", "/store", "/dir", "/get", "/?", "/exit", "/broadcast"));
+        ArrayList<String> validCommandsList = new ArrayList<>(List.of("/join", "/leave", "/register", "/store", "/dir", "/get", "/?", "/exit", "/broadcast", "/message"));
 
         return validCommandsList.contains(command);
     }
@@ -393,7 +430,7 @@ public class Client {
         public void run() {
             while (isUserRegistered) {
                 try {
-                    String msg = "[All] ".concat(dis.readUTF());
+                    String msg =dis.readUTF();
                     System.out.println("\n" + msg);
                     System.out.printf("Enter command: ");
                 } catch (IOException e) {
