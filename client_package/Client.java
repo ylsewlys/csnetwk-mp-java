@@ -116,7 +116,10 @@ public class Client {
                     }
 
                 }catch(IOException e){
-                    e.printStackTrace();
+                    // Force disconnect client
+                    System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                    disconnect();
+                    
                 }
             }else if(commandType.compareTo("/?") == 0){
                 try{
@@ -134,7 +137,9 @@ public class Client {
 
 
                 }catch(IOException e){
-                    e.printStackTrace();
+                    // Force disconnect client
+                    System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                    disconnect();
                 }
             }else if(commandType.compareTo("/register") == 0){
                 try{
@@ -156,7 +161,9 @@ public class Client {
                     }
                 
                 }catch(IOException e){
-                        e.printStackTrace();
+                        // Force disconnect client
+                        System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                        disconnect();
                     }
                 
             }else if(commandType.compareTo("/store") == 0){
@@ -202,7 +209,9 @@ public class Client {
                     }
 
                 }catch(IOException e){
-                    e.printStackTrace();
+                    // Force disconnect client
+                    System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                    disconnect();
                 }                
             }else if(commandType.compareTo("/dir") == 0){
                 try{
@@ -214,7 +223,9 @@ public class Client {
                         System.out.println("Error: You must be registered to use this command.");
                     }
                 }catch(IOException e){
-                    e.printStackTrace();
+                    // Force disconnect client
+                    System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                    disconnect();
                 }
              
             }else if(commandType.compareTo("/get") == 0){
@@ -252,7 +263,9 @@ public class Client {
                             }
 
                         }catch(IOException e){
-                            e.printStackTrace();
+                            // Force disconnect client
+                            System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                            disconnect();                            
                         }
 
 
@@ -288,7 +301,9 @@ public class Client {
                             }
 
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            // Force disconnect client
+                            System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                            disconnect();
                         }
                     }else{
                         System.out.println("Error: You must be registered to use this command.");
@@ -325,7 +340,9 @@ public class Client {
                             
                             
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            // Force disconnect client
+                            System.out.println("Server has shut down unexpectedly. Disconnecting...");
+                            disconnect();
                         }
                     }else{
                         System.out.println("Error: You must be registered to use this command.");
