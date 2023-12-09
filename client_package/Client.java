@@ -80,7 +80,7 @@ public class Client {
         
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == true){
                 // If client is already connected to a server and attempts to join one.
-                System.out.println("Error: You are already connected to a server: " + this.host + ":" + this.port + ". Please disconnect [/leave] from your current server if you want to connect to another.");
+                System.out.println("Error: Disconnection failed. Please connect to the server first.");
 
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == false){
                 // If client is not connected and attempts to join
@@ -182,7 +182,7 @@ public class Client {
                                     this.writer.flush();
                                 }
                                 
-                                System.out.println(this.reader.readUTF()); // Receive success response
+                                System.out.println(this.reader.readUTF()); // Receive response
 
                                 fis.close();
 
@@ -212,6 +212,52 @@ public class Client {
                     e.printStackTrace();
                 }
              
+            }else if(commandType.compareTo("/get") == 0){
+                if(commandParts.length == 2){
+                    if(this.isUserRegistered){
+                        try{
+                            this.writer.writeUTF(command); 
+                            System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
+                            
+                            String response = this.reader.readUTF();
+                            
+
+                            if(response.compareTo("file not found") == 0){
+                                System.out.println("Error: File not found.");
+                            }else if(response.compareTo("file found") == 0){
+                                
+                                long fileSize = this.reader.readLong();
+
+                                FileOutputStream fos = new FileOutputStream("clients_files" + "/" + commandParts[1]);
+                
+                                byte[] buffer = new byte[4 * 1024];
+                                int bytesReceived = 0;
+
+                
+                                while(fileSize > 0 && (bytesReceived = this.reader.read(buffer, 0, (int)Math.min(buffer.length, fileSize))) != -1){
+                                    fos.write(buffer, 0, bytesReceived);
+                                    fileSize -= bytesReceived;
+                                }
+                        
+
+                                System.out.println(this.reader.readUTF()); // Receive response
+                
+                                fos.close();
+   
+                            }
+
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
+
+
+
+                    }else{
+                        System.out.println("Error: You must be registered to use this command.");
+                    }
+                }else{
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                }
             }else{
                 System.out.println("Error: Menu Command not found. Please enter a valid command from the list of commands [/?].");
             }
