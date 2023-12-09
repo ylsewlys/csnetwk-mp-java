@@ -80,7 +80,7 @@ public class Client {
         
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == true){
                 // If client is already connected to a server and attempts to join one.
-                System.out.println("Error: Disconnection failed. Please connect to the server first.");
+                System.out.println("Error: You are already connected to a Server");
 
             }else if(commandType.compareTo("/join") == 0 && this.isUserConnected == false){
                 // If client is not connected and attempts to join
@@ -101,7 +101,7 @@ public class Client {
                     if(this.isUserRegistered){
                         this.writer.writeUTF(getUsername());
                     }
-                    System.out.println(this.reader.readUTF()); // for User wants to execute UTF
+                    // System.out.println(this.reader.readUTF()); // for User wants to execute UTF
 
                     String status = this.reader.readUTF();
 
@@ -119,7 +119,7 @@ public class Client {
                 try{
                     this.writer.writeUTF(command);
                     this.writer.flush();
-                    System.out.println(this.reader.readUTF()); // for 'User wants to execute' UTF
+                    // System.out.println(this.reader.readUTF()); // for 'User wants to execute' UTF
 
                     String response = this.reader.readUTF();
 
@@ -141,7 +141,7 @@ public class Client {
                     }else{
                         this.writer.writeUTF(command);
                         this.writer.flush();
-                        System.out.println(this.reader.readUTF());
+                        // System.out.println(this.reader.readUTF()); //for user wants to execute
                         String response = this.reader.readUTF();
                         if(response.startsWith("Welcome ")){
                             this.isUserRegistered = true;
@@ -159,7 +159,7 @@ public class Client {
                     if(commandParts.length == 2){
                         if(this.isUserRegistered){
                             this.writer.writeUTF(command); 
-                            System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
+                            // System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
 
                             String response = this.reader.readUTF();
 
@@ -203,7 +203,7 @@ public class Client {
                 try{
                     if(this.isUserRegistered){
                         this.writer.writeUTF(command);
-                        System.out.println(this.reader.readUTF());
+                        // System.out.println(this.reader.readUTF()); //For user wants to execute
                         System.out.println(this.reader.readUTF());
                     }else{
                         System.out.println("Error: You must be registered to use this command.");
@@ -217,7 +217,7 @@ public class Client {
                     if(this.isUserRegistered){
                         try{
                             this.writer.writeUTF(command); 
-                            System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
+                            // System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
                             
                             String response = this.reader.readUTF();
                             
