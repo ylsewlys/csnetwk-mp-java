@@ -11,6 +11,7 @@ public class Client {
     private int port;
 
     private Socket socket;
+    private Socket msgSocket;
     private DataInputStream reader;
     private DataOutputStream writer;
 
@@ -18,6 +19,8 @@ public class Client {
     private Boolean isUserRegistered;
     private String username = new String();
 
+
+    private MessageThread messageThread;
 
 
 
@@ -146,6 +149,8 @@ public class Client {
                         if(response.startsWith("Welcome ")){
                             this.isUserRegistered = true;
                             this.username = commandParts[1];
+                            this.messageThread = new MessageThread(msgSocket);
+                            this.messageThread.start();
                         }
                         System.out.println(response);
                     }
@@ -258,6 +263,40 @@ public class Client {
                 }else{
                     System.out.println("Error: Command parameters do not match or is not allowed.");
                 }
+            }else if(commandType.compareTo("/broadcast") == 0){
+                if(commandParts.length == 1){
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
+                }else{
+                    if(this.isUserRegistered){
+                        try {
+                            this.writer.writeUTF(command); 
+                            System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
+
+                            StringBuilder broadcastMsg = new StringBuilder();
+                            for(int i = 1; i < commandParts.length; i++){
+                                broadcastMsg.append(commandParts[i] + " ");
+                            }
+
+                            this.writer.writeUTF(broadcastMsg.toString());
+
+                            String response = this.reader.readUTF();
+
+                            if(response.compareTo("broadcast success") == 0){
+                                System.out.println("Your broadcast message was successfully sent!");
+                            }else{
+                                System.out.println("Failed to send broadcast message. An unexpected error has occurred.");
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+                        System.out.println("Error: You must be registered to use this command.");
+                    }
+
+                }
+
+
             }else{
                 System.out.println("Error: Menu Command not found. Please enter a valid command from the list of commands [/?].");
             }
@@ -270,6 +309,7 @@ public class Client {
     public void joinServer(String host, int port){
         try {
             this.socket = new Socket(host, port);
+            this.msgSocket = new Socket(host, port + 1);
             this.reader = new DataInputStream(socket.getInputStream());
             this.writer = new DataOutputStream(socket.getOutputStream());
 
@@ -291,6 +331,15 @@ public class Client {
                 this.username = null;
                 socket.close();
                 socket = null;
+                this.writer.close();
+                this.writer = null;
+                this.reader.close();
+                this.reader = null;
+
+                if(this.messageThread != null){
+                    this.messageThread.interrupt();
+                    this.messageThread = null;
+                }
             } catch (IOException e) {
                 System.out.println("Error: You aren't connected to any server");
             }
@@ -311,7 +360,7 @@ public class Client {
     }
 
     public Boolean isCommandValid(String command){
-        ArrayList<String> validCommandsList = new ArrayList<>(List.of("/join", "/leave", "/register", "/store", "/dir", "/get", "/?", "/exit"));
+        ArrayList<String> validCommandsList = new ArrayList<>(List.of("/join", "/leave", "/register", "/store", "/dir", "/get", "/?", "/exit", "/broadcast"));
 
         return validCommandsList.contains(command);
     }
@@ -328,5 +377,31 @@ public class Client {
     }
 
 
+
+    // For Message Thread
+    public class MessageThread extends Thread {
+
+        private final Socket msgSocket;
+        private final DataInputStream dis;
+
+        public MessageThread(Socket msgSocket) throws IOException {
+            this.msgSocket = msgSocket;
+            this.dis = new DataInputStream(msgSocket.getInputStream());
+        }
+
+        @Override
+        public void run() {
+            while (isUserRegistered) {
+                try {
+                    String msg = "[All] ".concat(dis.readUTF());
+                    System.out.println("\n" + msg);
+                    System.out.printf("Enter command: ");
+                } catch (IOException e) {
+                    interrupt();
+                    break;
+                }
+            }
+        }
+    }
 
 }
