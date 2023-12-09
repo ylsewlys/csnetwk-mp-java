@@ -196,6 +196,8 @@ public class Connection extends Thread {
             }else{
                 System.out.println("HERE");
                 String helpMsg = """
+                Commands List:
+                -----------------------
                 Connect to the server application: /join <server_ip_add> <port>
                 Disconnect from the server application: /leave
                 Register a unique handle or alias: /register <handle>
