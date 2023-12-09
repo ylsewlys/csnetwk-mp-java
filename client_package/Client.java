@@ -91,7 +91,7 @@ public class Client {
                     joinServer(host, port);
 
                 }else{
-                    System.out.println("Error: Invalid command parameters. Please make sure you've entered the correct parameters: /join <server_ip_add> <port>");
+                    System.out.println("Error: Command parameters do not match or is not allowed.");
                 }
             }else if(commandType.compareTo("/leave") == 0){
                 try{
@@ -106,7 +106,7 @@ public class Client {
                     String status = this.reader.readUTF();
 
                     if(status.compareTo("disconnect") == 0){
-                        System.out.println("Client connection successfully closed.");
+                        System.out.println("Connection closed. Thank you!");
                         disconnect();
                     }else if(status.compareTo("Parameter mismatch") == 0){
                         System.out.println("Error: Command parameters do not match or is not allowed.");
@@ -137,7 +137,7 @@ public class Client {
                 try{
                     //checks if the 
                     if(commandParts.length != 2){
-                    System.out.println("Error: Invalid command parameters. Please make sure you've entered the correct parameters: /register <username>");
+                        System.out.println("Error: Command parameters do not match or is not allowed.");
                     }else{
                         this.writer.writeUTF(command);
                         this.writer.flush();
@@ -156,8 +156,46 @@ public class Client {
                 
             }else if(commandType.compareTo("/store") == 0){
                 try{
-                    this.writer.writeUTF(command);
-                    System.out.println(this.reader.readUTF());
+                    if(commandParts.length == 2){
+                        if(this.isUserRegistered){
+                            this.writer.writeUTF(command); 
+                            System.out.println(this.reader.readUTF()); // For 'User wants to execute' UTF
+
+                            String response = this.reader.readUTF();
+
+                            if(response.compareTo("file not found") == 0){
+                                System.out.println("Error: File not found.");
+                            }else if(response.compareTo("file found") == 0){
+
+                                File file = new File("clients_files/" + commandParts[1]);
+
+                                // Send file size
+                                this.writer.writeLong(file.length());
+
+
+                                byte[] buffer = new byte[1024 * 4];
+                                FileInputStream fis = new FileInputStream("clients_files/" + commandParts[1]);
+                                int bytesRead = 0;
+                                
+                                while((bytesRead = fis.read(buffer)) != -1){
+                                    this.writer.write(buffer, 0, bytesRead);
+                                    this.writer.flush();
+                                }
+                                
+                                System.out.println(this.reader.readUTF()); // Receive success response
+
+                                fis.close();
+
+
+                
+                            }
+                        }else{
+                            System.out.println("Error: You must be registered to use this command.");
+                        }
+                    }else{
+                        System.out.println("Error: Command parameters do not match or is not allowed.");
+                    }
+
                 }catch(IOException e){
                     e.printStackTrace();
                 }                
