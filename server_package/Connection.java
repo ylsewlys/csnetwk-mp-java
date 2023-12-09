@@ -91,9 +91,9 @@ public class Connection extends Thread {
             }
 
             //s.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace(); // Uncomment this if you want to look at the error thrown
-        } finally {
+        }finally {
             System.out.println("Server: Client " + clientSocket.getRemoteSocketAddress() + " has disconnected");
         }
     }
