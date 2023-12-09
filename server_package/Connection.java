@@ -62,14 +62,6 @@ public class Connection extends Thread {
                     String data = dis.readUTF(); // this reads command from client
                     String[] command = data.split(" ");
                     
-                    if(this.alias.length() == 0){
-                        this.dos.writeUTF("Server: User wants to execute " + command[0]);
-                        System.out.println("Server: User wants to execute " + command[0]);
-                    }else{
-                        this.dos.writeUTF("Server: " + this.alias + " executes " + command[0]);
-                        System.out.println("Server: " + this.alias + " executes " + command[0]);
-                    }
-                    
                     
                     boolean isUserConnected = processComand(command, serverDirectory);
                     if(!isUserConnected){
