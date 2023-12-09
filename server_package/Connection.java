@@ -3,6 +3,8 @@ package server_package;
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 
 import java.time.format.DateTimeFormatter;
@@ -11,17 +13,21 @@ import java.time.LocalDateTime;
 public class Connection extends Thread {
 
     private final Socket clientSocket;
+    private final Socket msgSocket;
     private final DataInputStream dis;
     private final DataOutputStream dos;
     private static String[] clientUsernames = new String[100];
     private static ArrayList<String> serverFileList = new ArrayList<String>();
     private static ArrayList<String> clientFileList = new ArrayList<String>();
+    protected static Map<String, MsgClient> clients = new ConcurrentHashMap<>();
+    protected static Map<String, MsgClient> msgClients = new ConcurrentHashMap<>();
     private boolean isUserRegistered = false;
     private static final String clientFileDirectory = "clients_files";
     private String alias = "";
 
-    public Connection(Socket s) throws IOException  {
+    public Connection(Socket s, Socket msgSocket) throws IOException  {
         this.clientSocket = s;
+        this.msgSocket = msgSocket;
         this.dis = new DataInputStream(this.clientSocket.getInputStream());
         this.dos = new DataOutputStream(this.clientSocket.getOutputStream());
 
@@ -46,6 +52,7 @@ public class Connection extends Thread {
 
     }
 
+
     @Override
     public void run() {
         try {
@@ -63,8 +70,8 @@ public class Connection extends Thread {
                     String[] command = data.split(" ");
                     
                     if(this.alias.length() == 0){
-                        this.dos.writeUTF("Server: User wants to execute " + command[0]);
-                        System.out.println("Server: User wants to execute " + command[0]);
+                        this.dos.writeUTF("Server: Unregistered user executes " + command[0]);
+                        System.out.println("Server: Unregistered user executes " + command[0]);
                     }else{
                         this.dos.writeUTF("Server: " + this.alias + " executes " + command[0]);
                         System.out.println("Server: " + this.alias + " executes " + command[0]);
@@ -118,7 +125,8 @@ public class Connection extends Thread {
                             break; //break the loop
                         }
                     }
-
+                    msgClients.get(this.alias).close();
+                    msgClients.remove(this.alias);
                     this.alias = "";
                 }
 
@@ -155,6 +163,7 @@ public class Connection extends Thread {
                         System.out.println("Username Saved: " + username);
                         this.isUserRegistered = true;
                         this.alias = username;
+                        msgClients.put(this.alias, new MsgClient(this.msgSocket));
                         break;
                     }
                 }
@@ -193,6 +202,8 @@ public class Connection extends Thread {
                 Send file to server: /store <filename>
                 Request directory file list from a server: /dir
                 Fetch a file from a server: /get <filename>
+                Broadcast a message to all registered clients: /broadcast <message>
+                Message a registered client directly: /message <user> <message>
                 Request command help:""";
 
                 dos.writeUTF(helpMsg);
@@ -268,8 +279,55 @@ public class Connection extends Thread {
 
         }
 
+    }else if(command[0].compareTo("/broadcast") == 0){
+        String broadcastMsg = this.dis.readUTF();
+
+        try {
+            msgClients.forEach((alias, msgClient) -> {
+                try {
+                    if (!alias.equals(this.alias))
+                        msgClient.sendMessage(this.alias, broadcastMsg, true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            dos.writeUTF("broadcast success");
+            System.out.println(this.alias + " broadcasted a message.");
+        }
+        catch (Exception e) {
+            dos.writeUTF("broadcast failed");
+        }
+
+
+    }else if(command[0].compareTo("/message") == 0){
+        String receivedUsername = this.dis.readUTF();
+
+        System.out.println("RECEIVED USERNAME: " + receivedUsername + "|");
+        System.out.println("Status: " + msgClients.containsKey(receivedUsername));
+        // send responses
+        if(msgClients.containsKey(receivedUsername)){
+            if(receivedUsername.compareTo(this.alias) == 0){
+                this.dos.writeUTF("can't message own self");
+            }else{
+                this.dos.writeUTF("user found");
+                String directMsg = this.dis.readUTF();
+
+                msgClients.get(receivedUsername).sendMessage(this.alias, directMsg, false);
+
+                System.out.println(this.alias + " has successfully sent a message to " + receivedUsername);
+
+
+            }
+        }else{
+            this.dos.writeUTF("user not found");
+        }
     }
+
+
     return true;
 }
+
+
 
 }
